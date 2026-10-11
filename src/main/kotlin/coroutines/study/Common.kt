@@ -1,6 +1,8 @@
 package coroutines.study
 
 import coroutines.workshop.common.logger
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
 
@@ -8,8 +10,8 @@ import kotlinx.coroutines.yield
 
 // ---------- waiting: every wait is 1 second ----------
 
-const val WAIT_MS = 1_000L       // every sleep and every delay
-const val PATIENCE_MS = 3_500L   // how long a parent waits before it gives up: 3 ticks fit in, the 4th does not
+const val WAIT_MS = 10_000L       // every sleep and every delay
+const val PATIENCE_MS = 35000L   // how long a parent waits before it gives up: 3 ticks fit in, the 4th does not
 const val MANY = 100_000         // "a lot" of threads or coroutines
 
 /** Waits 1 second with sleep, then logs. Plain function: main, a thread or a coroutine can call it. */
@@ -112,3 +114,24 @@ fun computeChunk(i: Int, results: DoubleArray) {
 
 const val COROUTINES = 1_000     // so many coroutines add to the same counter
 const val ADDS = 1_000           // so many times each
+
+// ---------- channels: one coroutine sends, another receives ----------
+
+const val NUMBERS = 5            // so many numbers go through a channel
+
+/** Sends 1 to 5, as fast as it can. The gap between "I send" and "I sent" is the time send() waited. */
+suspend fun sendNumbers(channel: SendChannel<Int>) {
+    for (n in 1..NUMBERS) {
+        logger.info("I send {}", n)
+        channel.send(n)
+        logger.info("I sent {}", n)
+    }
+}
+
+/** Receives until the channel is closed. It needs 1 second (delay) for every number it gets. */
+suspend fun receiveSlowly(channel: ReceiveChannel<Int>) {
+    for (n in channel) {
+        logger.info("I got {}", n)
+        delay(WAIT_MS)
+    }
+}

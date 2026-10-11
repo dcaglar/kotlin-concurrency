@@ -7,8 +7,8 @@
 >
 > **My additions** (Dogan Caglar):
 >
-> * `src/main/kotlin/coroutines/study/` — a 34-step study guide, one `main` per step, that builds up from a plain
->   program to threads, coroutines, cancellation, async, dispatchers, shared state and flows.
+> * `src/main/kotlin/coroutines/study/` — a 43-step study guide, one `main` per step, that builds up from a plain
+>   program to threads, coroutines, cancellation, async, dispatchers, shared state, channels and flows.
 >   See [its README](src/main/kotlin/coroutines/study/README.md) and `computing-cores.sh` for 1-core vs. all-core timings.
 > * Notes, experiments and captured log output inside the original workshop exercises.
 > * A log line format that shows the thread *and* the coroutine (`[main @coroutine#2]`) in both the

@@ -32,6 +32,7 @@ Look at the timestamps too: a gap of 1 second is somebody waiting.
 | `tickWithDelay()` / `tickWithSleep()` | logs a tick every second | a long job |
 | `count(name)` / `countWithYield(name)` | counts to 3, busy before every number | short computing |
 | `computePi()` / `computeChunk(i)` | computes pi | long computing |
+| `sendNumbers(channel)` / `receiveSlowly(channel)` | sends 1 to 5 fast / receives one per second | a fast producer and a slow consumer |
 
 ## 1. Threads, the old way
 
@@ -112,9 +113,26 @@ On 1 core nothing makes computing faster. On 8 cores only steps 25 and 29 get fa
 | 31 | Step31SharedCounterRace | the same on many threads | less than 1_000_000, different every run |
 | 32 | Step32SharedCounterMutex | `Mutex` | 1_000_000 again, but slower |
 
-## 9. Generators (flows)
+## 9. Channels: communicating instead of sharing
+
+Steps 30 to 32 share one counter and lock it. A channel does it the other way: one coroutine sends values,
+another receives them, and nothing is shared. Everything runs on the thread main, except step 40.
 
 | Step | File | New | Look at |
 |---|---|---|---|
-| 33 | Step33Flow | `flow { }`, `emit`, `collect` | send 1, got 1, send 2, got 2, ... |
-| 34 | Step34FlowIsCold | a flow is cold | nothing is sent before collect; sent again for every collect |
+| 33 | Step33Channel | `Channel()`, `send`, `receive` | the sender waits at `send` until the receiver takes the value: a handoff |
+| 34 | Step34ChannelClose | `close()`, `for (n in channel)` | the receiver stops by itself when the channel is closed |
+| 35 | Step35ChannelBuffer | `Channel(capacity = 2)` | the sender runs 2 ahead, finished after 2 s instead of 4 s: backpressure |
+| 36 | Step36Produce | `produce { }` | step 34 without the channel and the `close()`: produce does both |
+| 37 | Step37Pipeline | a pipeline: numbers -> squares | 1, 4, 9, 16, 25: three coroutines, two channels |
+| 38 | Step38FanOut | 3 receivers, one channel | every number is got once, by one of them: a work queue, about 2 s |
+| 39 | Step39FanIn | 3 senders, one channel | A, B and C mixed into one stream |
+| 40 | Step40SharedCounterChannel | step 32 with a channel instead of a `Mutex` | 1_000_000, correct, no lock: one coroutine owns the counter |
+| 41 | Step41ChannelIsHot | a channel is hot | it sends before anybody receives; the second receiver gets nothing |
+
+## 10. Generators (flows)
+
+| Step | File | New | Look at |
+|---|---|---|---|
+| 42 | Step42Flow | `flow { }`, `emit`, `collect` | send 1, got 1, send 2, got 2, ... |
+| 43 | Step43FlowIsCold | a flow is cold | nothing is sent before collect; sent again for every collect (compare step 41) |
