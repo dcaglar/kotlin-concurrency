@@ -1,6 +1,7 @@
 package coroutines.workshop.exercise3
 
 import coroutines.workshop.common.logger
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -52,6 +53,14 @@ fun main() {
         calculatePiIn10FactorBy10Coroutine_4()
     }
 
+
+    logger.info("Starting       durationin10FactorBy10CoroutineOnDispatcherDefault()")
+    val durationin10FactorBy10CoroutineOnDispatcherDefault = measureTimeMillis {
+        calculatePiIn10FactorBy10Coroutine_OnDefaultDispatcher()
+    }
+
+
+
     logger.info("Starting       calculatePiIn10FactorBy10CoroutineWithYield_5()")
     val durationin10FactorBy10CoroutineWithYield_5 = measureTimeMillis {
         calculatePiIn10FactorBy10CoroutineWithYield_5()
@@ -61,6 +70,7 @@ fun main() {
     println("(10FactorInlinear)     Calculation took $durationIn10FactorLinearDuration_2 ms")
     println("( 10 threads)    Calculation took $durationin10FactorBy10Thread_3 ms")
     println("(10 coroutines) Calculation took $durationin10FactorBy10Coroutine_4 ms")
+    println("(10 coroutines) on Default Dispatcher Calculation took $durationin10FactorBy10CoroutineOnDispatcherDefault ms")
     println("(10 coroutines + yield) Calculation took $durationin10FactorBy10CoroutineWithYield_5 ms")
 
     val duration = measureTimeMillis {
@@ -264,9 +274,40 @@ fun calculatePiIn10FactorBy10Coroutine_4() = runBlocking {
         coroutines.add(coroutine)
     }
 
+
+
+
+
     coroutines.joinAll()
     pi = factorArr.sum()
     logger.info("pi is $pi") // (correct value of pi to 16 digits: 3.1415926535897932)
+}
+
+
+
+
+
+fun calculatePiIn10FactorBy10Coroutine_OnDefaultDispatcher() = runBlocking {
+    // approximate pi up to 9 digits: up to 1_000_000_000 terms
+    var curStart = 0L
+    val end = 1_000_000_000L
+    val nrOfTimes = 10
+    var pi = 0.toDouble()
+    val factorArr = DoubleArray(nrOfTimes)
+    //sum(0,1_000_000_000) = sum(0,end/nroftime) + sum(end/nroftime+1,end/nroftime*2)
+    val rangeLength = end / 10
+    val coroutines = mutableListOf<Job>()          // a list to keep the threads
+    for (count in 0..nrOfTimes - 1) {
+        val coroutine = launch(Dispatchers.Default) {
+            val curStart = count * rangeLength
+            val curEnd = (rangeLength * (count + 1)) - 1
+            logger.info("adding sum($curStart,$curEnd)")
+            val curResult = ((sumLeibniz(curStart, curEnd)) * 4)
+            factorArr[count] = curResult
+
+        }
+        coroutines.add(coroutine)
+    }
 }
 
 
