@@ -1,33 +1,31 @@
-package study
+package coroutines.study
 
+import coroutines.workshop.common.logger
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.system.measureTimeMillis
 
 /*
-  Case 4 - same split, but one coroutine per piece, inside runBlocking.
+  Step 27 - step 25 with coroutines: one coroutine per piece, all on ONE thread.
 
-  Expect: SAME time as case 1. Every log line says [main].
-  "chunk 0 start / chunk 0 done / chunk 1 start / chunk 1 done ..." strictly one after another.
-
-  Why: runBlocking runs all its children on ONE thread. launch gives you concurrency
-  (the ability to interleave) but not parallelism. And because leibniz() never suspends,
-  the coroutines don't even interleave - each one hogs the thread until it returns.
+  Look at: chunk 0 starts, chunk 0 is done, chunk 1 starts, chunk 1 is done, ... All on [main].
+           The time is the same as in step 24.
+  Why:     this is step 12 with real work. One thread, and computeChunk() never gives it away.
+           8 coroutines on one thread are not faster than 1.
+  Try:     compare the order of the lines with step 25.
  */
-fun main() = runBlocking {
+fun main() {
+    val results = DoubleArray(CHUNKS)
     val ms = measureTimeMillis {
-        val results = DoubleArray(CHUNKS)
-        val size = TERMS / CHUNKS
-
-        val jobs = List(CHUNKS) { i ->
-            launch {
-                log("chunk $i start")
-                results[i] = leibniz(i * size, (i + 1) * size)
-                log("chunk $i done")
-            }
-        }
-        jobs.forEach { it.join() }
-        log("pi = ${results.sum() * 4}")
+        runBlocking { startChunks(results) }
     }
-    log("coroutines, single thread: $ms ms")
+    logger.info("pi = {}", results.sum() * 4)
+    logger.info("it took {} ms", ms)
+}
+
+private fun CoroutineScope.startChunks(results: DoubleArray) {
+    repeat(CHUNKS) { i ->
+        launch { computeChunk(i, results) }
+    }
 }

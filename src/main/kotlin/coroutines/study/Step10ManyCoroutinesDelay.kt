@@ -1,36 +1,29 @@
-package study
+package coroutines.study
 
-import kotlinx.coroutines.delay
+import coroutines.workshop.common.logger
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlin.concurrent.thread
 import kotlin.system.measureTimeMillis
 
 /*
-  Case 7 - exercise 2 in miniature: work that WAITS instead of computing.
+  Step 10 - 100_000 coroutines. Each one runs sayHelloWithDelay().
 
-  Part A: N threads that each sleep 1 second.
-  Part B: N coroutines that each delay 1 second.
-
-  Expect: both take ~1 s at N = 5_000, but watch memory/thread count. Raise N to 100_000:
-  part A dies with "unable to create native thread", part B still takes ~1 s on one thread.
-
-  Why: sleep() blocks an OS thread. delay() suspends the coroutine and gives the thread back,
-  so 100k waiting coroutines cost 100k small objects, not 100k threads.
+  Look at: no crash. 100_000 hellos, all on the thread main, in a bit more than 1 second.
+           The coroutine numbers go up to coroutine#100001.
+  Why:     delay gives the thread back. While one coroutine waits, the thread starts the next one.
+           A waiting coroutine is a small object, not a thread (compare step 9).
+  Try:     set MANY in Common.kt to 1_000_000.
  */
-const val N = 5_000
-
 fun main() {
-    val a = measureTimeMillis {
-        val threads = List(N) { thread { Thread.sleep(1_000) } }
-        threads.forEach { it.join() }
+    val ms = measureTimeMillis {
+        runBlocking { startCoroutines() }
     }
-    log("A) $N threads sleeping 1s:    $a ms")
+    logger.info("{} coroutines took {} ms", MANY, ms)
+}
 
-    val b = measureTimeMillis {
-        runBlocking {
-            repeat(N) { launch { delay(1_000) } }
-        }   // runBlocking waits for all N children
+private fun CoroutineScope.startCoroutines() {
+    repeat(MANY) {
+        launch { sayHelloWithDelay() }
     }
-    log("B) $N coroutines delaying 1s: $b ms")
 }

@@ -1,19 +1,19 @@
-package study
+package coroutines.study
 
+import coroutines.workshop.common.logger
 import kotlinx.coroutines.runBlocking
 import kotlin.system.measureTimeMillis
 
 /*
-  Case 2 - same as case 1, but wrapped in runBlocking.
+  Step 26 - step 24 inside runBlocking. The same computePi(), now called by a coroutine.
 
-  Expect: SAME time as case 1, same thread ("main").
-  runBlocking by itself creates a coroutine scope on the current thread - nothing more.
-  It only becomes useful once you launch things inside it.
+  Look at: the pi line is on [main @coroutine#1]. The time is the same as in step 24.
+  Why:     a coroutine by itself makes nothing faster. It is still one thread doing all the work.
+  Try:     compare the time with step 24 a few times. Is there a real difference?
  */
-fun main() = runBlocking {
+fun main() {
     val ms = measureTimeMillis {
-        val pi = leibniz(0, TERMS) * 4
-        log("pi = $pi")
+        runBlocking { computePi() }
     }
-    log("runBlocking only: $ms ms")
+    logger.info("it took {} ms", ms)
 }

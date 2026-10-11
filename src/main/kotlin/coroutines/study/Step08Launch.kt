@@ -1,29 +1,27 @@
-package study
+package coroutines.study
 
-import kotlinx.coroutines.*
+import coroutines.workshop.common.logger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /*
-  Case 0 - what launch and yield actually DO (no timing, just order of output).
+  Step 8 - new: launch { }. A second coroutine, a child of the first.
 
-  Read the output top to bottom and compare with the comments.
+  Look at: coroutine#1 (the parent) logs both its lines first. Then coroutine#2 (the child) says hello.
+           The last line comes after the hello, and nobody called join().
+  Why:     launch only SCHEDULES the child. The parent is using the one thread, so the child has to wait.
+           runBlocking waits for its children by itself (compare step 2 and 3).
+           CoroutineScope.parent(): a function that launches a coroutine needs the scope of its caller.
+  Try:     launch a second child. How long does the program take?
  */
-fun main() = runBlocking {
+fun main() {
+    runBlocking { parent() }
+    logger.info("runBlocking is finished")
+}
 
-    log("1) launch schedules the child, it does NOT run yet")
-    launch { log("   child runs") }
-    log("   parent continues first")
-    yield()                       // parent gives up the thread -> child gets to run
-    log("   parent resumes after yield")
-
-    log("2) two children, no yield: A runs to the end before B starts")
-    val a = launch { repeat(3) { log("   A$it") } }
-    val b = launch { repeat(3) { log("   B$it") } }
-    joinAll(a, b)
-
-    log("3) two children WITH yield: they take turns")
-    val c = launch { repeat(3) { log("   C$it"); yield() } }
-    val d = launch { repeat(3) { log("   D$it"); yield() } }
-    joinAll(c, d)
-
-    log("4) everything ran on ONE thread: runBlocking's thread")
+private fun CoroutineScope.parent() {
+    logger.info("I launch a child")
+    launch { sayHelloWithDelay() }
+    logger.info("I am finished, the child did not run yet")
 }
