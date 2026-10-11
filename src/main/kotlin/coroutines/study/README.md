@@ -90,6 +90,8 @@ Look at the timestamps too: a gap of 1 second is somebody waiting.
 
 The same six programs, run on 1 core and on all cores. Run `./computing-cores.sh` in this folder:
 it runs every step both ways and prints the two times side by side (needs Docker or OrbStack).
+It takes step numbers too, so you never edit the script: `./computing-cores.sh 25 29`, `./computing-cores.sh 10-15 -o`
+(full output), `./computing-cores.sh 29 -c 2 -1` (only the container run, with 2 cores). `-h` lists the options.
 
 | Step | File | Starts | 1 core | 8 cores |
 |---|---|---|---|---|
