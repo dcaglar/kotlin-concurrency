@@ -1,13 +1,17 @@
 <configuration>
+    <!-- Every line shows the time, WHO logged it and the logger: who is what you watch when learning coroutines.
+         Plain thread: [worker-3]. Inside a coroutine: [main @coroutine#2], when the JVM runs with
+         -Dkotlinx.coroutines.debug (set in IntelliJ's Kotlin run-configuration template). -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>
-                %d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n
-            </pattern>
+            <pattern>%d{HH:mm:ss.SSS} %-45([%thread]) %-5level %logger{20} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <root level="debug">
+    <!-- libraries (Fuel, Apache HttpClient, ...) only when something is wrong -->
+    <root level="WARN">
         <appender-ref ref="CONSOLE"/>
     </root>
+    <!-- our own logger (common/logging.kt): everything. Set to DEBUG/TRACE here or with -Dlogback... when you add finer lines -->
+    <logger name="exercise" level="DEBUG"/>
 </configuration>

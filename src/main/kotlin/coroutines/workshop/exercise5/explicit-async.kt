@@ -24,15 +24,17 @@ import kotlin.system.measureTimeMillis
 @Serializable
 data class HelloTranslation(val code: String, val hello: String)
 
-fun main() = runBlocking {
+fun main() {
+    runBlocking {
 
-    val duration = measureTimeMillis {
+        val duration = measureTimeMillis {
 
-        logger.info(getHelloInLanguage("fr"))
+            logger.info("{}", getHelloInLanguage("fr"))
 
+        }
+
+        logger.info("Operation took {} ms", duration)
     }
-
-    logger.info("Operation took $duration ms")
 }
 
 // very simplified function for retrieving the language code - lacks error handling
